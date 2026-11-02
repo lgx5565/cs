@@ -1434,7 +1434,7 @@ function hsjsReport() {
     if (now - HSJS_REPORT_LAST < HSJS_REPORT_EVERY) return;
     HSJS_REPORT_LAST = now;
     var snap = hshlsStatsSnapshot();
-    snap.ver = "v24"; snap.n = ++HSJS_REPORT_N; snap.host = "";
+    snap.ver = "v26"; snap.n = ++HSJS_REPORT_N; snap.host = "";
     try {
       // 遍历所有日志框，捞源日志（[jk] 或 [jukaixin] 前缀）和路由日志
       var __allLogs = [];
@@ -1490,7 +1490,11 @@ function hshlsStatsSave() {
   } catch (e) { }
   try { hsjsReport(); } catch (eR) { }
 }
-try { var __hsT = setInterval(hshlsStatsSave, 30000); if (__hsT && typeof __hsT.unref === "function") __hsT.unref(); } catch (e) { }
+try { var __hsT = setInterval(hshlsStatsSave, 30000);
+try {
+  // v26: 无条件心跳上报（不依赖 HSHLS_DIRTY，确保纯直连源也可见）
+  setInterval(function(){ try{ hsjsReport(); }catch(e){} }, 60000).unref && setInterval(function(){ try{ hsjsReport(); }catch(e){} }, 60000).unref();
+} catch (e) { }; if (__hsT && typeof __hsT.unref === "function") __hsT.unref(); } catch (e) { }
 try { process.on("exit", hshlsStatsSave); } catch (e) { }
 
 function hshlsStats(){var bufferedTs=0,bufferedBytes=0,inflight=0;HSHLS_SESSIONS.forEach(function(v){bufferedTs+=v.buf.size;inflight+=v.fly.size;try{v.buf.forEach(function(b){bufferedBytes+=(b&&b.length)||0})}catch(e){}});var __hs=[];HSHLS_HOSTS.forEach(function(v,k){__hs.push({host:k,segMs:hshlsMed(v.seg||[]),txtMs:hshlsMed(v.txt||[]),segKbps:hshlsMed(v.kbps||[]),n:(v.seg||[]).length})});__hs.sort(function(a,b){return b.segMs-a.segMs});return Object.assign({sessions:HSHLS_SESSIONS.size,bufferedTs:bufferedTs,bufferedBytes:bufferedBytes,inflight:inflight,slowHosts:__hs.slice(0,15),txtMs:hshlsMed(HSHLS_TIMING.txt),segMs:hshlsMed(HSHLS_TIMING.seg),txtN:HSHLS_TIMING.txt.length,segN:HSHLS_TIMING.seg.length,txtFly:HSHLS_TXT_FLY.size},HSHLS_STATS)}
